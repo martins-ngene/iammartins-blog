@@ -1,0 +1,107 @@
+---
+import Base from './Base.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  tags: string[];
+  heroImage?: string;
+  readingTime: string;
+}
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  tags,
+  heroImage,
+  readingTime,
+} = Astro.props;
+---
+
+<Base
+  title={title}
+  description={description}
+  type="article"
+  publishedTime={pubDate}
+  image={heroImage}
+>
+  <article class="shell fade-up">
+    <a href="/blog" class="back rail">← All writing</a>
+
+    <header class="post-head">
+      <div class="rails">
+        <span class="rail"><FormattedDate date={pubDate} mono /></span>
+        <span class="rail">// {readingTime}</span>
+        {updatedDate && (
+          <span class="rail">// updated <FormattedDate date={updatedDate} mono /></span>
+        )}
+      </div>
+      <h1>{title}</h1>
+      <p class="lede">{description}</p>
+      {tags.length > 0 && (
+        <div class="tags">
+          {tags.map((t) => <a class="tag-chip" href={`/tags/${t}`}>{t}</a>)}
+        </div>
+      )}
+    </header>
+
+    {heroImage && (
+      <img class="hero" src={heroImage} alt="" width="1200" height="630" />
+    )}
+
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .shell {
+    max-width: 46rem;
+    padding-block: 3rem 1rem;
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 2.5rem;
+    color: var(--muted);
+  }
+  .back:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .rails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .post-head h1 {
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    margin: 0 0 0.8rem;
+  }
+  .lede {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin: 0 0 1.25rem;
+    max-width: 54ch;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .hero {
+    margin: 2.5rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .prose {
+    margin-top: 2.5rem;
+  }
+</style>

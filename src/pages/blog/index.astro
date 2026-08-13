@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title="Writing" description="Every post — engineering, systems, and detours.">
+  <section class="shell fade-up">
+    <header class="head">
+      <p class="rail rail--accent">// {posts.length} posts</p>
+      <h1>Writing</h1>
+      <p class="sub">
+        Engineering notes, system write-ups, and the occasional detour.
+        Newest first.
+      </p>
+    </header>
+    <div class="list">
+      {posts.map((post, i) => (
+        <PostCard
+          href={`/blog/${post.id}/`}
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          tags={post.data.tags}
+          index={i}
+        />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  section {
+    padding-block: 3.5rem 2rem;
+    max-width: 52rem;
+  }
+  .head {
+    margin-bottom: 1rem;
+  }
+  .head h1 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    margin: 0.6rem 0 0.6rem;
+  }
+  .sub {
+    color: var(--ink-soft);
+    max-width: 52ch;
+    margin: 0;
+  }
+  .list {
+    border-bottom: 1px solid var(--line);
+    margin-top: 1.5rem;
+  }
+</style>

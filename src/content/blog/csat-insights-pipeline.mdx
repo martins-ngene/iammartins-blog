@@ -1,0 +1,66 @@
+---
+title: "Building a CSAT insights pipeline with Hasura, Claude, and Mailgun"
+description: "How I turned a firehose of raw support survey responses into a weekly digest of themes the team actually reads."
+pubDate: 2026-02-02
+updatedDate: 2026-02-10
+tags: ["automation", "ai", "graphql", "engineering"]
+draft: false
+---
+
+Every week we collected hundreds of CSAT survey responses and did almost nothing with them. The scores went into a dashboard; the *comments* — where all the signal lives — went nowhere. This is how I closed that loop with a small, boring pipeline.
+
+## The shape of the problem
+
+Raw survey rows aren't insight. A pile of "the booking flow was confusing" comments only becomes useful once it's clustered, counted, and put in front of the right person on a cadence they'll actually keep.
+
+So the pipeline has three jobs:
+
+1. Pull the week's responses out of the database.
+2. Summarise them into recurring themes.
+3. Deliver the digest somewhere it gets read.
+
+## Pulling the data
+
+The responses live behind Hasura, so extraction is just a GraphQL query with a date filter:
+
+```graphql
+query WeeklyResponses($since: timestamptz!) {
+  csat_responses(where: { created_at: { _gte: $since } }) {
+    score
+    comment
+    channel
+  }
+}
+```
+
+No ORM, no extra service — Hasura already exposes exactly the slice I need.
+
+## Summarising with Claude
+
+The comments go to the Claude API with a prompt that asks for themes, not prose. The key move is forcing structured output so the next step doesn't have to parse English:
+
+```ts
+const res = await anthropic.messages.create({
+  model: "claude-sonnet-4-6",
+  max_tokens: 1024,
+  messages: [{
+    role: "user",
+    content: `Cluster these support comments into themes.
+Return ONLY JSON: { theme: string, count: number, example: string }[].
+
+${JSON.stringify(comments)}`,
+  }],
+});
+
+const themes = JSON.parse(res.content[0].text);
+```
+
+> Ask a model for JSON and it will usually oblige — but validate anyway. One malformed response shouldn't take down the whole job.
+
+## Delivering it
+
+The themes get rendered into a simple HTML email and sent through Mailgun every Monday morning. That's the entire trick: the insight has to arrive *before* the week's decisions get made, or it's just archaeology.
+
+## What I'd change
+
+The clustering is stateless — it forgets last week existed. The next version keeps a running set of themes so we can see a complaint *trending*, not just present. That's the difference between a report and an early-warning system.

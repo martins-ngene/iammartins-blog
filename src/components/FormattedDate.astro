@@ -1,0 +1,21 @@
+---
+interface Props {
+  date: Date;
+  mono?: boolean;
+}
+const { date, mono = false } = Astro.props;
+
+const iso = date.toISOString();
+const human = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+// Monospace rail form, e.g. 2026.02.14
+const railForm = date
+  .toISOString()
+  .slice(0, 10)
+  .replace(/-/g, '.');
+---
+
+<time datetime={iso}>{mono ? railForm : human}</time>

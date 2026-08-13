@@ -1,0 +1,53 @@
+---
+import { SITE, SOCIALS } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell inner">
+    <div class="left">
+      <p class="rail">// {SITE.author} · {year}</p>
+      <p class="tagline">{SITE.tagline}</p>
+    </div>
+    <nav aria-label="Social and feeds" class="links">
+      {SOCIALS.map((s) => (
+        <a href={s.href} rel="me noopener" target="_blank">{s.label}</a>
+      ))}
+      <a href="/rss.xml">RSS</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    margin-top: 5rem;
+    padding-block: 2.5rem;
+  }
+  .inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .tagline {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin: 0.4rem 0 0;
+    max-width: 32ch;
+  }
+  .links {
+    display: flex;
+    gap: 1.1rem;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+  }
+  .links a {
+    color: var(--muted);
+  }
+  .links a:hover {
+    color: var(--accent);
+  }
+</style>

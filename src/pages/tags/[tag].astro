@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+
+  return tags.map((tag) => {
+    const filtered = posts
+      .filter((p) => p.data.tags.includes(tag))
+      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+    return { params: { tag }, props: { tag, posts: filtered } };
+  });
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<Base title={`Topic: ${tag}`} description={`Posts tagged ${tag}.`}>
+  <section class="shell fade-up">
+    <a href="/tags" class="back rail">← All topics</a>
+    <header class="head">
+      <p class="rail rail--accent">// {posts.length} posts</p>
+      <h1>{tag}</h1>
+    </header>
+    <div class="list">
+      {posts.map((post, i) => (
+        <PostCard
+          href={`/blog/${post.id}/`}
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          tags={post.data.tags}
+          index={i}
+        />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  section {
+    padding-block: 3rem 2rem;
+    max-width: 52rem;
+  }
+  .back {
+    display: inline-block;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .back:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .head h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 500;
+    margin: 0.5rem 0 0;
+  }
+  .list {
+    border-bottom: 1px solid var(--line);
+    margin-top: 1.5rem;
+  }
+</style>

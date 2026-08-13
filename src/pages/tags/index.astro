@@ -1,0 +1,94 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+}
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<Base title="Topics" description="Browse writing by topic.">
+  <section class="shell fade-up">
+    <header class="head">
+      <p class="rail rail--accent">// {tags.length} topics</p>
+      <h1>Topics</h1>
+      <p class="sub">Everything I write, sorted by subject.</p>
+    </header>
+
+    {tags.length === 0 ? (
+      <p class="empty">No tags yet — add a <code>tags</code> array to a post's frontmatter.</p>
+    ) : (
+      <ul class="cloud">
+        {tags.map(([tag, count]) => (
+          <li>
+            <a href={`/tags/${tag}`} class="tag-item">
+              <span class="label">{tag}</span>
+              <span class="rail count">{count}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Base>
+
+<style>
+  section {
+    padding-block: 3.5rem 2rem;
+    max-width: 52rem;
+  }
+  .head h1 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    margin: 0.6rem 0 0.5rem;
+  }
+  .sub {
+    color: var(--ink-soft);
+    margin: 0 0 2rem;
+  }
+  .cloud {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    color: var(--ink);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .tag-item:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+  .count {
+    color: var(--accent);
+  }
+  .empty {
+    color: var(--muted);
+  }
+  .empty code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+</style>
