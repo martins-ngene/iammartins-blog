@@ -6,50 +6,91 @@ A complete reference on how to write, format, preview, and publish new blog post
 
 ## Table of Contents
 
-1. [Publishing Workflow at a Glance](#publishing-workflow-at-a-glance)
-2. [Anatomy of a Blog Post](#anatomy-of-a-blog-post)
+1. [Two Publishing Methods (Web UI vs. Git)](#two-publishing-methods-web-ui-vs-git)
+2. [Method 1: In-Browser Publishing via Keystatic (`/keystatic`)](#method-1-in-browser-publishing-via-keystatic-keystatic)
+   - [Accessing the Admin UI](#accessing-the-admin-ui)
+   - [Local Development Mode](#local-development-mode)
+   - [Production Mode (GitHub Sync)](#production-mode-github-sync)
+   - [Creating and Editing Posts](#creating-and-editing-posts)
+3. [Method 2: Manual Markdown / Git Publishing](#method-2-manual-markdown--git-publishing)
    - [File Location & Slugs](#file-location--slugs)
    - [Markdown (`.md`) vs. MDX (`.mdx`)](#markdown-md-vs-mdx-mdx)
-3. [Frontmatter Specification](#frontmatter-specification)
+4. [Frontmatter Specification](#frontmatter-specification)
    - [Schema Reference](#schema-reference)
    - [Copy-Paste Starter Template](#copy-paste-starter-template)
-4. [How Astro Compiles and Routes Content](#how-astro-compiles-and-routes-content)
-5. [Writing Content & Formatting](#writing-content--formatting)
+5. [How Astro Compiles and Routes Content](#how-astro-compiles-and-routes-content)
+6. [Writing Content & Formatting](#writing-content--formatting)
    - [Typography & Structure](#typography--structure)
    - [Code Blocks & Syntax Highlighting (Shiki)](#code-blocks--syntax-highlighting-shiki)
    - [Callouts & Blockquotes](#callouts--blockquotes)
    - [Working with Images & Media](#working-with-images--media)
    - [Embedding Components with MDX](#embedding-components-with-mdx)
-6. [Tags & Taxonomy](#tags--taxonomy)
-7. [Drafts & Work in Progress](#drafts--work-in-progress)
-8. [Local Preview & Quality Checks](#local-preview--quality-checks)
-9. [Publishing to Production](#publishing-to-production)
-10. [Editorial Voice & Style Guide](#editorial-voice--style-guide)
+7. [Tags & Taxonomy](#tags--taxonomy)
+8. [Drafts & Work in Progress](#drafts--work-in-progress)
+9. [Local Preview & Quality Checks](#local-preview--quality-checks)
+10. [Publishing to Production](#publishing-to-production)
+11. [Editorial Voice & Style Guide](#editorial-voice--style-guide)
 
 ---
 
-## Publishing Workflow at a Glance
+## Two Publishing Methods (Web UI vs. Git)
 
-The diagram below outlines the entire lifecycle of an article from initial idea to live production deployment on Cloudflare Pages:
+You can write and publish articles using either of two workflows:
 
 ```mermaid
 flowchart TD
-    Idea["1. New Idea / Technical Topic"] --> CreateFile["2. Create src/content/blog/my-post-slug.md"]
-    CreateFile --> SetFrontmatter["3. Add Frontmatter (title, description, pubDate, tags, draft: true)"]
-    SetFrontmatter --> WriteContent["4. Write Post Body (Markdown, Code Blocks, Visuals)"]
-    WriteContent --> LocalPreview["5. Preview at http://localhost:4321/blog/my-post-slug"]
-    LocalPreview --> Review{"Review & Verify"}
-    Review -- "Edits Needed" --> WriteContent
-    Review -- "Ready to Ship" --> UnsetDraft["6. Set draft: false and verify pubDate"]
-    UnsetDraft --> RunBuild["7. Run `npm run build` (Schema & Type Verification)"]
-    RunBuild --> GitCommit["8. Commit & push: `git push origin main`"]
-    GitCommit --> CFBuild["9. Cloudflare Pages automatically builds & deploys"]
-    CFBuild --> Live["10. Live on blog.iammartins.com, RSS feed, & Sitemap"]
+    subgraph Method 1: Web Interface (Zero Terminal)
+        Web["Open /keystatic in Browser"] --> Form["Fill Title, Tags, Description & Write in Rich Editor"]
+        Form --> ClickPublish["Click 'Publish'"]
+        ClickPublish --> ModeCheck{"Environment"}
+        ModeCheck -- "Localhost" --> SaveDisk["Directly writes to src/content/blog/"]
+        ModeCheck -- "Production" --> CommitGH["Keystatic commits file to GitHub via API"]
+    end
+
+    subgraph Method 2: Code Editor & Git
+        LocalFile["Create src/content/blog/slug.md"] --> WriteMD["Write Frontmatter + Markdown"]
+        WriteMD --> GitPush["git add . && git push origin main"]
+    end
+
+    SaveDisk --> DevPreview["Instant Hot-Reload on http://localhost:4321"]
+    CommitGH --> CF["Cloudflare Pages CI/CD Webhook"]
+    GitPush --> CF
+    CF --> Build["Astro 5 Static Build (`dist/`)"]
+    Build --> LiveEdge["Live on blog.iammartins.com"]
 ```
 
 ---
 
-## Anatomy of a Blog Post
+## Method 1: In-Browser Publishing via Keystatic (`/keystatic`)
+
+[Keystatic](https://keystatic.com) is integrated into your blog, providing a visual Notion-like editor without needing a terminal or Git commands.
+
+### Accessing the Admin UI
+- **Local Development**: Visit **`http://localhost:4321/keystatic`** with `npm run dev` running.
+- **Production**: Visit **`https://blog.iammartins.com/keystatic`** directly from any browser (desktop, tablet, or phone).
+
+### Local Development Mode
+When running locally (`npm run dev`), Keystatic runs in **Local Mode**:
+1. Open `http://localhost:4321/keystatic`.
+2. Click **Blog Posts** $\rightarrow$ **Add Post** (or click any existing post to edit).
+3. Type the title (slug is generated automatically), description, publication date, tags, and body.
+4. Click **Create** or **Save**.
+5. Keystatic immediately writes the `.mdx` file directly into `src/content/blog/` on your computer.
+6. Astro hot-reloads and the post is live at `http://localhost:4321/blog/<slug>`.
+
+### Production Mode (GitHub Sync)
+When accessed on the live website at `https://blog.iammartins.com/keystatic`:
+1. On your first visit, Keystatic prompts you to authenticate with GitHub.
+2. It connects to your repository (`martins-ngene/iammartins-blog`) via the Keystatic GitHub App.
+3. Once authenticated, the admin dashboard displays all existing posts directly from the repository.
+4. When you create or edit an article and click **Publish**, Keystatic calls GitHub's API to commit the new Markdown file directly to the `main` branch.
+5. Cloudflare Pages detects the commit, rebuilds the site, and ships the update in ~30 seconds.
+
+---
+
+## Method 2: Manual Markdown / Git Publishing
+
+### Anatomy of a Blog Post
 
 ### File Location & Slugs
 

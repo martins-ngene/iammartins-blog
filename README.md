@@ -9,6 +9,7 @@ Personal engineering blog for **Martins Ngene** — built with [Astro 5](https:/
 ## Stack & Architecture
 
 - **Astro 5** — static output (`output: "static"`), zero client-side JavaScript by default
+- **Keystatic CMS** — in-browser visual editing and publishing interface at `/keystatic` (local and GitHub mode)
 - **MDX (`@astrojs/mdx`)** — standard Markdown with embedded Astro/JSX components when needed
 - **Shiki** — zero-runtime syntax highlighting powered by `github-light` and `github-dark`
 - **Content Collections** — type-safe schema validation via Zod in `src/content.config.ts`
@@ -109,3 +110,4 @@ Every subsequent push to `main` automatically triggers an edge rebuild and deplo
 ## Documentation
 
 - **[GUIDE.md](file:///Users/martinium-dev/projects/iammartins-blog/GUIDE.md)**: Comprehensive guide on how to write, format, preview, and publish a new blog post.
+- **[CHANGELOG.md](file:///Users/martinium-dev/projects/iammartins-blog/CHANGELOG.md)**: Detailed history of all releases, features, and migrations.
