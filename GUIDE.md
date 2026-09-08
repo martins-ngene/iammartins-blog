@@ -79,12 +79,49 @@ When running locally (`npm run dev`), Keystatic runs in **Local Mode**:
 6. Astro hot-reloads and the post is live at `http://localhost:4321/blog/<slug>`.
 
 ### Production Mode (GitHub Sync)
-When accessed on the live website at `https://blog.iammartins.com/keystatic`:
-1. On your first visit, Keystatic prompts you to authenticate with GitHub.
-2. It connects to your repository (`martins-ngene/iammartins-blog`) via the Keystatic GitHub App.
-3. Once authenticated, the admin dashboard displays all existing posts directly from the repository.
-4. When you create or edit an article and click **Publish**, Keystatic calls GitHub's API to commit the new Markdown file directly to the `main` branch.
-5. Cloudflare Pages detects the commit, rebuilds the site, and ships the update in ~30 seconds.
+When accessed on the live website at `https://blog.iammartins.com/keystatic` or `https://iammartins-blog.pages.dev/keystatic`:
+
+Keystatic authenticates you via GitHub OAuth so it can commit new articles directly to your repository on the `master` branch.
+
+#### Required Cloudflare Pages Environment Variables
+When running in production GitHub mode, `@keystatic/core` requires three environment variables in your Cloudflare Pages Dashboard under **Workers & Pages → iammartins-blog → Settings → Environment variables**:
+
+| Variable | Description | Where to Get It |
+| :--- | :--- | :--- |
+| `KEYSTATIC_GITHUB_CLIENT_ID` | Client ID of your GitHub OAuth App | From your GitHub App settings page |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | Client Secret of your GitHub OAuth App | Generated in your GitHub App settings |
+| `KEYSTATIC_SECRET` | Random 32+ character string for cookie/session encryption | Run `openssl rand -hex 32` in terminal |
+
+> [!WARNING]
+> **HTTP 500 Error on Login?**
+> If you click "Log in with GitHub" and get an `HTTP ERROR 500`, it means one or more of these environment variables are missing from Cloudflare Pages. Keystatic throws `Missing required config: clientId, clientSecret, secret` when they are undefined.
+
+#### Setting Up Your GitHub App
+1. Go to GitHub: **Settings $\rightarrow$ Developer settings $\rightarrow$ GitHub Apps $\rightarrow$ [New GitHub App](https://github.com/settings/apps/new)**.
+2. Fill in:
+   - **GitHub App name:** `iammartins-blog-cms` (must be globally unique)
+   - **Homepage URL:** `https://blog.iammartins.com/keystatic`
+   - **Callback URL:** Add both the custom domain and preview domain:
+     ```text
+     https://blog.iammartins.com/api/keystatic/github/oauth/callback
+     https://iammartins-blog.pages.dev/api/keystatic/github/oauth/callback
+     ```
+   - **Webhook:** Uncheck **Active** (no webhook needed).
+   - **Permissions:** Under **Repository permissions**, find **Contents** and set to **Read and write**.
+   - Under *Where can this GitHub App be installed?*, select **Only on this account**.
+3. Click **Create GitHub App**.
+4. In the app settings:
+   - Copy the **Client ID**.
+   - Under *Client secrets*, click **Generate a new client secret** and copy the secret.
+   - Click **Install App** in the left sidebar and install it on `martins-ngene/iammartins-blog`.
+5. Add `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, and `KEYSTATIC_SECRET` to your Cloudflare Pages environment variables and trigger a redeployment.
+
+#### Alternative: Zero-Config with Keystatic Cloud
+If you prefer not to manage a custom GitHub OAuth App, you can switch to Keystatic Cloud:
+1. Sign in at [keystatic.cloud](https://keystatic.cloud) with GitHub (free for personal repos).
+2. Add project `martins-ngene/iammartins-blog`.
+3. In `keystatic.config.ts`, set `storage: { kind: 'cloud' }` and `cloud: { project: 'martins-ngene/iammartins-blog' }`.
+4. No environment variables or custom GitHub Apps required in Cloudflare Pages.
 
 ---
 
@@ -101,8 +138,8 @@ The filename directly defines the post's **URL slug**:
 ```text
 src/content/blog/
 ├── csat-insights-pipeline.mdx   -->   https://blog.iammartins.com/blog/csat-insights-pipeline/
-├── make-to-n8n-migration.md     -->   https://blog.iammartins.com/blog/make-to-n8n-migration/
-└── why-write-in-public.md       -->   https://blog.iammartins.com/blog/why-write-in-public/
+├── make-to-n8n-migration.mdx     -->   https://blog.iammartins.com/blog/make-to-n8n-migration/
+└── hello-world.mdx              -->   https://blog.iammartins.com/blog/hello-world/
 ```
 
 #### Slug Naming Rules:

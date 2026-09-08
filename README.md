@@ -67,14 +67,14 @@ All global settings and metadata live in centralized configuration files:
 
 ## Deploying to Cloudflare Pages
 
-This site builds directly to static assets, requiring no server adapter.
+This site generates static assets with dynamic Keystatic API functions powered by `@astrojs/cloudflare`.
 
 ### 1. Push Repository to GitHub
-Ensure all your changes are committed and pushed to your remote repository on the `main` branch:
+Ensure all your changes are committed and pushed to your remote repository on the `master` branch:
 ```bash
 git add .
 git commit -m "feat: blog updates"
-git push origin main
+git push origin master
 ```
 
 ### 2. Connect to Cloudflare Pages
@@ -83,6 +83,7 @@ git push origin main
 3. Select your repository (`iammartins-blog`).
 4. Set the build configuration:
    - **Framework preset:** `Astro`
+   - **Production branch:** `master`
    - **Build command:** `npm run build`
    - **Build output directory:** `dist`
    - **Root directory:** `/` (default)
@@ -94,7 +95,16 @@ git push origin main
 3. If `iammartins.com` is managed in your Cloudflare account, DNS records (`CNAME` to `<project>.pages.dev`) and SSL/TLS certificates are provisioned automatically.
 4. If managed externally, create a `CNAME` record at your registrar pointing `blog` to `<your-project>.pages.dev`.
 
-Every subsequent push to `main` automatically triggers an edge rebuild and deployment.
+### 4. Configure Keystatic Environment Variables (for Live Web CMS)
+To allow logging in with GitHub at `blog.iammartins.com/keystatic` in production:
+1. In Cloudflare Pages, go to **Settings → Environment variables**.
+2. Add under **Production**:
+   - `KEYSTATIC_GITHUB_CLIENT_ID`: Your GitHub OAuth App Client ID.
+   - `KEYSTATIC_GITHUB_CLIENT_SECRET`: Your GitHub OAuth App Client Secret.
+   - `KEYSTATIC_SECRET`: A secure random 32+ character string (e.g., generated with `openssl rand -hex 32`).
+3. *(See [GUIDE.md](file:///Users/martinium-dev/projects/iammartins-blog/GUIDE.md) for step-by-step GitHub App registration).*
+
+Every subsequent push to `master` automatically triggers an edge rebuild and deployment.
 
 ---
 

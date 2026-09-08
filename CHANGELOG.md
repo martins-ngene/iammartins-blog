@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dual-mode storage: Local filesystem storage in development (`localhost:4321/keystatic`) and GitHub mode (`martins-ngene/iammartins-blog`) in production (`blog.iammartins.com/keystatic`).
 - **Cloudflare Pages Adapter (`@astrojs/cloudflare@^12`)**:
   - Configured `@astrojs/cloudflare` adapter in `astro.config.mjs` to support Keystatic API routes alongside static HTML pre-rendering.
+- **Keystatic OAuth & Production Auth Support**:
+  - Registered `env.schema` in `astro.config.mjs` declaring `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, and `KEYSTATIC_SECRET` for secure server-side session and OAuth token exchange.
+  - Documented setup guide for creating a GitHub OAuth App and adding production environment variables to Cloudflare Pages to prevent HTTP 500 login errors.
 - **Publishing & Operations Documentation**:
   - Created [GUIDE.md](file:///Users/martinium-dev/projects/iammartins-blog/GUIDE.md) detailing the post authoring lifecycle, frontmatter specification, and publishing via both Keystatic UI and Git.
   - Updated [README.md](file:///Users/martinium-dev/projects/iammartins-blog/README.md) with comprehensive architecture, scripts, and Cloudflare Pages deployment instructions.
